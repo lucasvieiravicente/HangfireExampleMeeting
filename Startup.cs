@@ -41,6 +41,7 @@ namespace ExemploMeetingHangfire
             });
 
             app.ConfigurarSwagger();
+            app.UsarHangfire();
         }
     }
 }

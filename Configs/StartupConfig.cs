@@ -1,4 +1,6 @@
 ﻿using ExemploMeetingHangfire.Contexts;
+using Hangfire;
+using Hangfire.SqlServer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -14,6 +16,7 @@ namespace ExemploMeetingHangfire.Configs
         {
             AdicionarSwaggerGenInfo(services);
             AdicionarContextoEF(services, configuration);
+            AdicionarHangfire(services, configuration);
             InjecaoDeDependencia.InjetarServicos(services);
             InjecaoDeDependencia.InjetarRepositorios(services);
         }
@@ -25,6 +28,12 @@ namespace ExemploMeetingHangfire.Configs
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "HangfireMeeting API v1");
             });
+        }
+
+        public static void UsarHangfire(this IApplicationBuilder app)
+        {
+            app.UseHangfireDashboard();
+            app.UseHangfireServer();
         }
 
         private static void AdicionarSwaggerGenInfo(IServiceCollection services)
@@ -53,6 +62,24 @@ namespace ExemploMeetingHangfire.Configs
         private static void AdicionarContextoEF(IServiceCollection services, IConfiguration configuration)
         {
             services.AddDbContext<EFContext>(x => x.UseSqlServer(configuration.GetConnectionString("Database")));
+        }
+
+        private static void AdicionarHangfire(IServiceCollection services, IConfiguration configuration)
+        {
+            services.AddHangfire(hangfireConfig => hangfireConfig
+                        .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+                        .UseSimpleAssemblyNameTypeSerializer()
+                        .UseRecommendedSerializerSettings()
+                        .UseSqlServerStorage(configuration.GetConnectionString("Hangfire"),
+                        new SqlServerStorageOptions
+                        {
+                            CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+                            SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+                            QueuePollInterval = TimeSpan.Zero,
+                            UseRecommendedIsolationLevel = true,
+                            DisableGlobalLocks = true,
+                            SchemaName = "Hangfire"
+                        }));
         }
     }
 }
