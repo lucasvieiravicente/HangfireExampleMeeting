@@ -11,6 +11,8 @@ namespace ExemploMeetingHangfire.Configs
     {
         public static void InjetarServicos(IServiceCollection services)
         {
+            services.AddTransient<IMockService, MockService>();
+            services.AddTransient<IProcessamentoService, ProcessamentoService>();
             services.AddTransient<IPostoService, PostoService>();
         }
 

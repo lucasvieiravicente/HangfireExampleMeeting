@@ -2,128 +2,103 @@
 using ExemploMeetingHangfire.Models;
 using ExemploMeetingHangfire.Repositories.Interfaces;
 using ExemploMeetingHangfire.Services.Interfaces;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace ExemploMeetingHangfire.Services
-{   
+{
     public class PostoService : IPostoService
     {
         private readonly IRepository<Posto> _repositorioPosto;
         private readonly IRepository<PostoParaAtualizar> _repositorioPostoParaAtualizar;
-        private readonly IRepository<Processamento> _repositorioProcessamento;
+        private readonly IProcessamentoService _processamentoService;
 
-        public PostoService(
+        public PostoService
+        (
             IRepository<Posto> repositorioPosto, 
             IRepository<PostoParaAtualizar> repositorioPostoParaAtualizar,
-            IRepository<Processamento> repositorioProcessamento)
+            IProcessamentoService processamentoService
+        )
         {
             _repositorioPosto = repositorioPosto;
             _repositorioPostoParaAtualizar = repositorioPostoParaAtualizar;
-            _repositorioProcessamento = repositorioProcessamento;
+            _processamentoService = processamentoService;
         }
 
-        public async Task GerarMassas()
+        public async Task AtualizarPostos()
         {
-            Processamento processamento = null;
+            Processamento processamento = await _processamentoService.RegistrarProcessamento();
+            var status = StatusProcessamento.Sucesso;
 
             try
             {
-                processamento = await RegistrarProcessamento();
-                await GerarMassaEmPostos();
-                await GerarMassaEmPostosParaAtualizar();
-                await AtualizarProcessamento(processamento, StatusProcessamento.Sucesso);
+                var quantidadePostos = PegarQuantidadeDePostosParaAtualizar();
+                var quantidadesDeProcessamentos = quantidadePostos / 20;
+
+                for (int i = 0; i < quantidadesDeProcessamentos; i++)
+                    await AtualizarPostosComAsNovasInformacoes(i);
             }
             catch
             {
-                await RemoverValoresExistentes(_repositorioPosto);
-                await RemoverValoresExistentes(_repositorioPostoParaAtualizar);
-                await AtualizarProcessamento(processamento, StatusProcessamento.Falha);
+                status = StatusProcessamento.Falha;
+            }
+            finally
+            {
+                await _processamentoService.AtualizarProcessamento(processamento, status);
             }
         }
 
-        private async Task AtualizarProcessamento(Processamento processamento, StatusProcessamento status)
+        #region [Comandos de atualização]
+        private async Task AtualizarPostosComAsNovasInformacoes(int index)
         {
-            if (processamento is null)
-                return;
+            IEnumerable<PostoParaAtualizar> postosParaAtualizar = PegarPostosParaAtualizar(index);
 
-            processamento.Status = status;
-            processamento.DataFinalizada = DateTime.Now;
-
-            await _repositorioProcessamento.UpdateAsync(processamento);
+            await DesativarPostos(postosParaAtualizar);
+            await InserirNovosPostos(postosParaAtualizar);
         }
 
-        private async Task<Processamento> RegistrarProcessamento()
+        private async Task InserirNovosPostos(IEnumerable<PostoParaAtualizar> postosParaAtualizar)
         {
-            var processamento = new Processamento
-            {
-                Ativo = true,
-                DataInicio = DateTime.Now,
-                Status = StatusProcessamento.Processando
-            };
-
-            await _repositorioProcessamento.InsertAsync(processamento);
-
-            return processamento;
+            IEnumerable<Posto> postosNovos = postosParaAtualizar.Select(x => new Posto(x));
+            await _repositorioPosto.InsertAsync(postosNovos);
         }
 
-        private async Task GerarMassaEmPostos()
+        private async Task DesativarPostos(IEnumerable<PostoParaAtualizar> postosParaAtualizar)
         {
-            await RemoverValoresExistentes(_repositorioPosto);
+            var cnpjs = postosParaAtualizar.Select(x => x.Cnpj).ToList();
+            IEnumerable<Posto> postos = PegarPostosPorCpnj(cnpjs);
+            postos.All(x => x.Ativo = false);
 
-            var lista = new List<Posto>();
+            await _repositorioPosto.UpdateAsync(postos);
+        }
+        #endregion
 
-            for(int i = 0; i < 1000; i++)
-            {
-                var cnpj = 1000 + i;
+        #region [Métodos utilitários]
 
-                lista.Add(new Posto()
-                {
-                    Cnpj = cnpj.ToString(),
-                    Endereco = $"Rua Exemplo {i}",
-                    Operando = true,
-                    Responsavel = $"Fulano {i}",
-                    Rollback = true,
-                    Ativo = true
-                });
-            }
-
-            await _repositorioPosto.InsertAsync(lista);
+        private IEnumerable<Posto> PegarPostosPorCpnj(List<string> cnpjs)
+        {
+            return _repositorioPosto.Query()
+                                        .Where(x => cnpjs.Contains(x.Cnpj))
+                                        .ToList();
         }
 
-        private async Task GerarMassaEmPostosParaAtualizar()
+        private IEnumerable<PostoParaAtualizar> PegarPostosParaAtualizar(int index)
         {
-            await RemoverValoresExistentes(_repositorioPostoParaAtualizar);
+            int quantidade = 100;
+            int quantidadeIgnorada = index * quantidade;
 
-            var lista = new List<PostoParaAtualizar>();
-
-            for (int i = 0; i < 1000; i++)
-            {
-                var cnpj = 1000 + i;
-
-                lista.Add(new PostoParaAtualizar()
-                {
-                    Cnpj = cnpj.ToString(),
-                    Endereco = $"Rua Exemplo para atualizar {i}",
-                    Operando = true,
-                    Responsavel = $"Fulano para atualizar {i}",
-                    Processado = false,
-                    Ativo = true
-                });
-            }
-
-            await _repositorioPostoParaAtualizar.InsertAsync(lista);
+            return _repositorioPostoParaAtualizar.Query()
+                                                    .Skip(quantidadeIgnorada)
+                                                    .Take(quantidade)
+                                                    .ToList();
         }
 
-        private async Task RemoverValoresExistentes<T>(IRepository<T> repositorio) where T : EntidadeBase
+        private int PegarQuantidadeDePostosParaAtualizar()
         {
-            var valores = repositorio.GetAll();
-            var temValor = valores.Any();
-
-            if (temValor)
-                await repositorio.RemoveAsync(valores);
+            return _repositorioPostoParaAtualizar.GetAllActive().Count();
         }
+
+        #endregion
     }
 }

@@ -2,8 +2,8 @@
 
 namespace ExemploMeetingHangfire.Services.Interfaces
 {
-    public interface IPostoService
+    public interface IMockService
     {
-        Task AtualizarPostos();
+        Task GerarMassas();
     }
 }

@@ -12,6 +12,8 @@ namespace ExemploMeetingHangfire.Repositories.Interfaces
 
         IEnumerable<T> GetAll();
 
+        IEnumerable<T> GetAllActive();
+
         T FindById(Guid id);
 
         IEnumerable<T> FindByIds(IEnumerable<Guid> ids);

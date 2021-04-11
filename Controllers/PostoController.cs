@@ -37,7 +37,7 @@ namespace ExemploMeetingHangfire.Controllers
         {
             try
             {
-                BackgroundJob.Enqueue<IPostoService>(x => x.GerarMassas());
+                BackgroundJob.Enqueue<IMockService>(x => x.GerarMassas());
                 return Ok();
             }
             catch (Exception ex)
