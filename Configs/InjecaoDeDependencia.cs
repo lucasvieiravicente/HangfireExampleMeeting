@@ -2,6 +2,8 @@
 using ExemploMeetingHangfire.Repositories.Interfaces;
 using ExemploMeetingHangfire.Models;
 using Microsoft.Extensions.DependencyInjection;
+using ExemploMeetingHangfire.Services.Interfaces;
+using ExemploMeetingHangfire.Services;
 
 namespace ExemploMeetingHangfire.Configs
 {
@@ -9,7 +11,7 @@ namespace ExemploMeetingHangfire.Configs
     {
         public static void InjetarServicos(IServiceCollection services)
         {
-
+            services.AddTransient<IPostoService, PostoService>();
         }
 
         public static void InjetarRepositorios(IServiceCollection services)

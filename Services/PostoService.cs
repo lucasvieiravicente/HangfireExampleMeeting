@@ -1,7 +1,6 @@
 ﻿using ExemploMeetingHangfire.Models;
 using ExemploMeetingHangfire.Repositories.Interfaces;
 using ExemploMeetingHangfire.Services.Interfaces;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -66,6 +65,8 @@ namespace ExemploMeetingHangfire.Services
 
             await _repositorioPostoParaAtualizar.InsertAsync(lista);
         }
+
+
 
         private async Task RemoverValoresExistentes<T>(IRepository<T> repositorio) where T : EntidadeBase
         {
