@@ -32,8 +32,8 @@ namespace ExemploMeetingHangfire.Controllers
             }
         }
 
-        [HttpPost("GerarMassa")]
-        public ActionResult GerarMassaEmPostos()
+        [HttpPost("GerarMassas")]
+        public ActionResult GerarMassas()
         {
             try
             {
