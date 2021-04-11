@@ -1,4 +1,4 @@
-﻿using ExemploMeetingHangfire.Domains.Contexts;
+﻿using ExemploMeetingHangfire.Contexts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using System;
 
-namespace ExemploMeetingHangfire.Domains.Configs
+namespace ExemploMeetingHangfire.Configs
 {
     public static class StartupConfig
     {

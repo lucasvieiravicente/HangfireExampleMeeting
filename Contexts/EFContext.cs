@@ -1,9 +1,9 @@
-﻿using ExemploMeetingHangfire.Domains.Models;
+﻿using ExemploMeetingHangfire.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Debug;
 
-namespace ExemploMeetingHangfire.Domains.Contexts
+namespace ExemploMeetingHangfire.Contexts
 {
     public class EFContext : DbContext
     {

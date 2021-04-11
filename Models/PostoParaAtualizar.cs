@@ -1,4 +1,4 @@
-﻿namespace ExemploMeetingHangfire.Domains.Models
+﻿namespace ExemploMeetingHangfire.Models
 {
     public class PostoParaAtualizar : PostoBase
     {

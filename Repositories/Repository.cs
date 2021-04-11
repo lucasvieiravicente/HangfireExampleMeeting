@@ -1,13 +1,13 @@
-﻿using ExemploMeetingHangfire.Domain.Repositories.Interfaces;
-using ExemploMeetingHangfire.Domains.Contexts;
-using ExemploMeetingHangfire.Domains.Models;
+﻿using ExemploMeetingHangfire.Repositories.Interfaces;
+using ExemploMeetingHangfire.Contexts;
+using ExemploMeetingHangfire.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace ExemploMeetingHangfire.Domain.Repositories
+namespace ExemploMeetingHangfire.Repositories
 {
     public class Repository<T> : IRepository<T> where T : EntidadeBase
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace ExemploMeetingHangfire.Domains.Models
+namespace ExemploMeetingHangfire.Models
 {
     public class EntidadeBase
     {

@@ -1,9 +1,9 @@
-﻿using ExemploMeetingHangfire.Domain.Repositories;
-using ExemploMeetingHangfire.Domain.Repositories.Interfaces;
-using ExemploMeetingHangfire.Domains.Models;
+﻿using ExemploMeetingHangfire.Repositories;
+using ExemploMeetingHangfire.Repositories.Interfaces;
+using ExemploMeetingHangfire.Models;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace ExemploMeetingHangfire.Domains.Configs
+namespace ExemploMeetingHangfire.Configs
 {
     public static class InjecaoDeDependencia
     {

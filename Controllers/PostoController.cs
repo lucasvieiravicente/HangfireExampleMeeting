@@ -1,5 +1,5 @@
-﻿using ExemploMeetingHangfire.Domain.Repositories.Interfaces;
-using ExemploMeetingHangfire.Domains.Models;
+﻿using ExemploMeetingHangfire.Repositories.Interfaces;
+using ExemploMeetingHangfire.Models;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;

@@ -1,12 +1,15 @@
-﻿using ExemploMeetingHangfire.Domains.Models;
+﻿using ExemploMeetingHangfire.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
-namespace ExemploMeetingHangfire.Domain.Repositories.Interfaces
+namespace ExemploMeetingHangfire.Repositories.Interfaces
 {
     public interface IRepository<T> where T : EntidadeBase
     {
+        IQueryable<T> Query();
+
         IEnumerable<T> GetAll();
 
         T FindById(Guid id);
