@@ -45,5 +45,19 @@ namespace ExemploMeetingHangfire.Controllers
                 return BadRequest(ex);
             }
         }
+
+        [HttpPost("AtualizarPostos")]
+        public ActionResult AtualizarPostos()
+        {
+            try
+            {
+                BackgroundJob.Enqueue<IPostoService>(x => x.AtualizarPostos());
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
+        }
     }
 }

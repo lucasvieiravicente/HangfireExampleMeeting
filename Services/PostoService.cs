@@ -33,72 +33,92 @@ namespace ExemploMeetingHangfire.Services
 
             try
             {
-                var quantidadePostos = PegarQuantidadeDePostosParaAtualizar();
-                var quantidadesDeProcessamentos = quantidadePostos / 20;
-
-                for (int i = 0; i < quantidadesDeProcessamentos; i++)
-                    await AtualizarPostosComAsNovasInformacoes(i);
+                await DesativarPostosAtuais();
+                await InserirNovosPostos();
+                await DesativarRollbackPostosAntigos();
+                throw new System.Exception();
+                await AtualizarRollbackNovosPostos();
             }
             catch
             {
+                await FazerRollback();
                 status = StatusProcessamento.Falha;
             }
             finally
             {
+                await RemoverPostosParaAtualizar();
                 await _processamentoService.AtualizarProcessamento(processamento, status);
             }
         }
 
-        #region [Comandos de atualização]
-        private async Task AtualizarPostosComAsNovasInformacoes(int index)
-        {
-            IEnumerable<PostoParaAtualizar> postosParaAtualizar = PegarPostosParaAtualizar(index);
+        #region [Comandos de atualização de posto]
 
-            await DesativarPostos(postosParaAtualizar);
-            await InserirNovosPostos(postosParaAtualizar);
-        }
-
-        private async Task InserirNovosPostos(IEnumerable<PostoParaAtualizar> postosParaAtualizar)
+        private async Task InserirNovosPostos()
         {
+            IEnumerable<PostoParaAtualizar> postosParaAtualizar = _repositorioPostoParaAtualizar.GetAllActive();
             IEnumerable<Posto> postosNovos = postosParaAtualizar.Select(x => new Posto(x));
             await _repositorioPosto.InsertAsync(postosNovos);
         }
 
-        private async Task DesativarPostos(IEnumerable<PostoParaAtualizar> postosParaAtualizar)
+        private async Task DesativarPostosAtuais()
         {
-            var cnpjs = postosParaAtualizar.Select(x => x.Cnpj).ToList();
-            IEnumerable<Posto> postos = PegarPostosPorCpnj(cnpjs);
-            postos.All(x => x.Ativo = false);
+            var postos = _repositorioPosto.Query().Where(x => x.Ativo && x.Rollback).ToList();
+            postos.ForEach(x => x.Ativo = false);
 
             await _repositorioPosto.UpdateAsync(postos);
+        }
+
+        private async Task RemoverPostosParaAtualizar()
+        {
+            var postos = _repositorioPostoParaAtualizar.Query().Where(x => x.Ativo).ToList();
+            await _repositorioPostoParaAtualizar.RemoveAsync(postos);
+        }
+        #endregion
+
+        #region [Métodos de Rollback e atualização de propriedade rollback]
+        public async Task AtualizarRollbackNovosPostos()
+        {
+            List<Posto> postos = PegarNovosPostosSemRollback();
+            postos.ForEach(x => x.Rollback = true);
+            await _repositorioPosto.UpdateAsync(postos);
+        }
+
+        public async Task DesativarRollbackPostosAntigos()
+        {
+            List<Posto> postos = PegarAntigosPostosDesativados();
+            postos.ForEach(x => x.Rollback = false);
+            await _repositorioPosto.UpdateAsync(postos);
+        }
+
+        public async Task FazerRollback()
+        {
+            IEnumerable<Posto> postosNovos = PegarNovosPostosSemRollback();
+            await _repositorioPosto.RemoveAsync(postosNovos);
+
+            IEnumerable<Posto> postosAntigos = PegarAntigosPostosDesativados();
+            foreach(var posto in postosAntigos)
+            {
+                posto.Ativo = true;
+                posto.Rollback = true;
+            }
+            await _repositorioPosto.UpdateAsync(postosAntigos);
         }
         #endregion
 
         #region [Métodos utilitários]
-
-        private IEnumerable<Posto> PegarPostosPorCpnj(List<string> cnpjs)
+        private List<Posto> PegarAntigosPostosDesativados()
         {
             return _repositorioPosto.Query()
-                                        .Where(x => cnpjs.Contains(x.Cnpj))
+                                        .Where(x => !x.Ativo && x.Rollback)
                                         .ToList();
         }
 
-        private IEnumerable<PostoParaAtualizar> PegarPostosParaAtualizar(int index)
+        private List<Posto> PegarNovosPostosSemRollback()
         {
-            int quantidade = 100;
-            int quantidadeIgnorada = index * quantidade;
-
-            return _repositorioPostoParaAtualizar.Query()
-                                                    .Skip(quantidadeIgnorada)
-                                                    .Take(quantidade)
-                                                    .ToList();
+            return _repositorioPosto.Query()
+                                        .Where(x => x.Ativo && !x.Rollback)
+                                        .ToList();
         }
-
-        private int PegarQuantidadeDePostosParaAtualizar()
-        {
-            return _repositorioPostoParaAtualizar.GetAllActive().Count();
-        }
-
         #endregion
     }
 }
