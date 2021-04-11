@@ -53,7 +53,7 @@ namespace ExemploMeetingHangfire.Configs
                     License = new OpenApiLicense
                     {
                         Name = "MIT License",
-                        //Url = new Uri("inserir link da license do repositorio depois")
+                        Url = new Uri("https://github.com/lucasvieiravicente/HangfireExampleMeeting/blob/main/LICENSE")
                     },
                 });
             });
