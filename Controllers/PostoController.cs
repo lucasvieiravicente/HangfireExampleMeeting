@@ -1,8 +1,5 @@
-﻿using ExemploMeetingHangfire.Repositories.Interfaces;
-using ExemploMeetingHangfire.Models;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Threading.Tasks;
 using ExemploMeetingHangfire.Services.Interfaces;
 using Hangfire;
 using Serilog;
@@ -42,11 +39,14 @@ namespace ExemploMeetingHangfire.Controllers
         {
             try
             {
+                _logger.Information("Enfileirando Atualização de postos.");
                 BackgroundJob.Enqueue<IPostoService>(x => x.AtualizarPostos());
+                _logger.Information("Atualização de postos enfileirada com sucesso.");
                 return Ok();
             }
             catch (Exception ex)
             {
+                _logger.Error(ex.Message);
                 return BadRequest(ex);
             }
         }
