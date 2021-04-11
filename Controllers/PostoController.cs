@@ -5,6 +5,7 @@ using System;
 using System.Threading.Tasks;
 using ExemploMeetingHangfire.Services.Interfaces;
 using Hangfire;
+using Serilog;
 
 namespace ExemploMeetingHangfire.Controllers
 {
@@ -12,16 +13,26 @@ namespace ExemploMeetingHangfire.Controllers
     [ApiController]
     public class PostoController : ControllerBase
     {
+        private readonly ILogger _logger;
+
+        public PostoController(ILogger logger)
+        {
+            _logger = logger;
+        }
+
         [HttpPost("GerarMassas")]
         public ActionResult GerarMassas()
         {
             try
             {
+                _logger.Information("Enfileirando geração de massa.");
                 BackgroundJob.Enqueue<IMockService>(x => x.GerarMassas());
+                _logger.Information("Geração de massa enfileirada com sucesso.");
                 return Ok();
             }
             catch (Exception ex)
             {
+                _logger.Error(ex.Message);
                 return BadRequest(ex);
             }
         }
