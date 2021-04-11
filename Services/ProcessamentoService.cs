@@ -1,8 +1,10 @@
 ﻿using ExemploMeetingHangfire.Enums;
 using ExemploMeetingHangfire.Models;
+using ExemploMeetingHangfire.Repositories;
 using ExemploMeetingHangfire.Repositories.Interfaces;
 using ExemploMeetingHangfire.Services.Interfaces;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace ExemploMeetingHangfire.Services
@@ -29,16 +31,26 @@ namespace ExemploMeetingHangfire.Services
 
         public async Task<Processamento> RegistrarProcessamento()
         {
-            var processamento = new Processamento
+            var processamentoPendente = _repositorioProcessamento.Query()
+                                                .Where(x => x.Status == StatusProcessamento.Processando)
+                                                .FirstOrDefault();
+            if(processamentoPendente is null)
             {
-                Ativo = true,
-                DataInicio = DateTime.Now,
-                Status = StatusProcessamento.Processando
-            };
+                var processamento = new Processamento
+                {
+                    Ativo = true,
+                    DataInicio = DateTime.Now,
+                    Status = StatusProcessamento.Processando
+                };
 
-            await _repositorioProcessamento.InsertAsync(processamento);
+                await _repositorioProcessamento.InsertAsync(processamento);
 
-            return processamento;
+                return processamento;
+            }
+            else
+            {
+                return processamentoPendente;
+            }
         }
     }
 }

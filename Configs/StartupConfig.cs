@@ -80,6 +80,8 @@ namespace ExemploMeetingHangfire.Configs
                             DisableGlobalLocks = true,
                             SchemaName = "Hangfire"
                         }));
+
+            GlobalJobFilters.Filters.Add(new AutomaticRetryAttribute { Attempts = 2 });
         }
     }
 }

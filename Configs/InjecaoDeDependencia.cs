@@ -19,8 +19,8 @@ namespace ExemploMeetingHangfire.Configs
         public static void InjetarRepositorios(IServiceCollection services)
         {
             services.AddTransient<IRepository<Posto>, Repository<Posto>>();
-            services.AddTransient<IRepository<Processamento>, Repository<Processamento>>();
             services.AddTransient<IRepository<PostoParaAtualizar>, Repository<PostoParaAtualizar>>();
+            services.AddTransient<IRepository<Processamento>, Repository<Processamento>>();
         }
     }
 }

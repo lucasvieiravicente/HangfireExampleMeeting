@@ -2,6 +2,8 @@
 using ExemploMeetingHangfire.Models;
 using ExemploMeetingHangfire.Repositories.Interfaces;
 using ExemploMeetingHangfire.Services.Interfaces;
+using Hangfire;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -32,7 +34,7 @@ namespace ExemploMeetingHangfire.Services
             var status = StatusProcessamento.Sucesso;
 
             try
-            {
+            {              
                 await DesativarPostosAtuais();
                 await InserirNovosPostos();
                 await AtualizarRollbackNovosPostos();

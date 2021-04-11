@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using Hangfire;
+using System.Threading.Tasks;
 
 namespace ExemploMeetingHangfire.Services.Interfaces
 {

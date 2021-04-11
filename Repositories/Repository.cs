@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ExemploMeetingHangfire.Enums;
 
 namespace ExemploMeetingHangfire.Repositories
 {
@@ -26,7 +27,6 @@ namespace ExemploMeetingHangfire.Repositories
         {
             return Query().Where(x => x.Ativo);
         }
-
 
         public IEnumerable<T> GetAll()
         {
