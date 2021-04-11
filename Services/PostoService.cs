@@ -21,11 +21,7 @@ namespace ExemploMeetingHangfire.Services
 
         public async Task GerarMassaEmPostos()
         {
-            var postos = _repositorioPosto.GetAll();
-            var temValor = postos.Any();
-
-            if (temValor)
-                await _repositorioPosto.RemoveAsync(postos);
+            await RemoverValoresExistentes(_repositorioPosto);
 
             var lista = new List<Posto>();
 
@@ -49,12 +45,7 @@ namespace ExemploMeetingHangfire.Services
 
         public async Task GerarMassaEmPostosParaAtualizar()
         {
-
-            var postosParaAtualizar = _repositorioPostoParaAtualizar.GetAll();
-            var temValor = postosParaAtualizar.Any();
-
-            if (temValor)
-                await _repositorioPostoParaAtualizar.RemoveAsync(postosParaAtualizar);
+            await RemoverValoresExistentes(_repositorioPostoParaAtualizar);
 
             var lista = new List<PostoParaAtualizar>();
 
@@ -74,6 +65,15 @@ namespace ExemploMeetingHangfire.Services
             }
 
             await _repositorioPostoParaAtualizar.InsertAsync(lista);
+        }
+
+        private async Task RemoverValoresExistentes<T>(IRepository<T> repositorio) where T : EntidadeBase
+        {
+            var valores = repositorio.GetAll();
+            var temValor = valores.Any();
+
+            if (temValor)
+                await repositorio.RemoveAsync(valores);
         }
     }
 }
