@@ -2,6 +2,8 @@
 using ExemploMeetingHangfire.Models;
 using ExemploMeetingHangfire.Repositories.Interfaces;
 using ExemploMeetingHangfire.Services.Interfaces;
+using Serilog;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,17 +15,20 @@ namespace ExemploMeetingHangfire.Services
         private readonly IRepository<Posto> _repositorioPosto;
         private readonly IRepository<PostoParaAtualizar> _repositorioPostoParaAtualizar;
         private readonly IProcessamentoService _processamentoService;
+        private readonly ILogger _logger;
 
         public MockService
         (
             IRepository<Posto> repositorioPosto, 
             IRepository<PostoParaAtualizar> repositorioPostoParaAtualizar,
-            IProcessamentoService processamentoService
+            IProcessamentoService processamentoService,
+            ILogger logger
         )
         {
             _repositorioPosto = repositorioPosto;
             _repositorioPostoParaAtualizar = repositorioPostoParaAtualizar;
             _processamentoService = processamentoService;
+            _logger = logger;
         }
 
         public async Task GerarMassas()
@@ -33,24 +38,38 @@ namespace ExemploMeetingHangfire.Services
 
             try
             {
+                _logger.Information("Iniciando geração de massa");
+
                 processamento = await _processamentoService.RegistrarProcessamento();
                 await GerarMassaEmPostos();
                 await GerarMassaEmPostosParaAtualizar();
+
+                _logger.Information("Geração de massa concluída com sucesso");
             }
-            catch
+            catch(Exception ex)
             {
+                _logger.Error($"Houve o seguinte erro: {ex.Message}");
+                _logger.Information("Iniciando processo de remoção");
+
                 await RemoverValoresExistentes(_repositorioPosto);
                 await RemoverValoresExistentes(_repositorioPostoParaAtualizar);
-                status = StatusProcessamento.Falha;               
+                status = StatusProcessamento.Falha;
+
+                _logger.Information("Processo de remoção concluído");
             }
             finally
             {
                 await _processamentoService.AtualizarProcessamento(processamento, status);
+
+                string textoStatus = status == StatusProcessamento.Sucesso ? "sucesso" : "falha";
+                _logger.Information($"Finalizando processamento com status: {textoStatus}");
             }
         }
 
         private async Task GerarMassaEmPostos()
         {
+            _logger.Information("Gerando massa na tabela Postos");
+
             await RemoverValoresExistentes(_repositorioPosto);
 
             var lista = new List<Posto>();
@@ -75,6 +94,8 @@ namespace ExemploMeetingHangfire.Services
 
         private async Task GerarMassaEmPostosParaAtualizar()
         {
+            _logger.Information("Gerando massa na tabela PostosParaAtualizar");
+
             await RemoverValoresExistentes(_repositorioPostoParaAtualizar);
 
             var lista = new List<PostoParaAtualizar>();
