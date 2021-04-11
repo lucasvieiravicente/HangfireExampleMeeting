@@ -46,8 +46,8 @@ namespace ExemploMeetingHangfire.Configs
                     Description = "Api to exemplify the using of Hangfire",
                     Contact = new OpenApiContact
                     {
-                        Name = "Lucas V Vicente",
-                        Email = "lucasvieiravicente1@gmail.com",
+                        Name = "Lucas V. Vicente - LVI",
+                        Email = "lucas.vicente@iteris.com.br",
                         Url = new Uri("https://white-moss-0cf7e1e0f.azurestaticapps.net/")
                     },
                     License = new OpenApiLicense
