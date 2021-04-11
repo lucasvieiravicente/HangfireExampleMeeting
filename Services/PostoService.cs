@@ -35,9 +35,8 @@ namespace ExemploMeetingHangfire.Services
             {
                 await DesativarPostosAtuais();
                 await InserirNovosPostos();
-                await DesativarRollbackPostosAntigos();
-                throw new System.Exception();
                 await AtualizarRollbackNovosPostos();
+                await DesativarRollbackPostosAntigos();
             }
             catch
             {
@@ -78,7 +77,7 @@ namespace ExemploMeetingHangfire.Services
         #region [Métodos de Rollback e atualização de propriedade rollback]
         public async Task AtualizarRollbackNovosPostos()
         {
-            List<Posto> postos = PegarNovosPostosSemRollback();
+            List<Posto> postos = PegarNovosPostosProcessando();
             postos.ForEach(x => x.Rollback = true);
             await _repositorioPosto.UpdateAsync(postos);
         }
@@ -92,7 +91,7 @@ namespace ExemploMeetingHangfire.Services
 
         public async Task FazerRollback()
         {
-            IEnumerable<Posto> postosNovos = PegarNovosPostosSemRollback();
+            IEnumerable<Posto> postosNovos = PegarNovosPostosProcessando();
             await _repositorioPosto.RemoveAsync(postosNovos);
 
             IEnumerable<Posto> postosAntigos = PegarAntigosPostosDesativados();
@@ -113,10 +112,10 @@ namespace ExemploMeetingHangfire.Services
                                         .ToList();
         }
 
-        private List<Posto> PegarNovosPostosSemRollback()
+        private List<Posto> PegarNovosPostosProcessando()
         {
             return _repositorioPosto.Query()
-                                        .Where(x => x.Ativo && !x.Rollback)
+                                        .Where(x => x.Ativo && x.Processando)
                                         .ToList();
         }
         #endregion
