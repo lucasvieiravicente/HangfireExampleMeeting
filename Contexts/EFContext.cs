@@ -23,5 +23,7 @@ namespace ExemploMeetingHangfire.Contexts
         public DbSet<Posto> Postos { get; set; }
 
         public DbSet<PostoParaAtualizar> PostosParaAtualizar { get; set; }
+
+        public DbSet<Processamento> Processamentos { get; set; }
     }
 }

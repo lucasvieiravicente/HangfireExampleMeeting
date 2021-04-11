@@ -1,6 +1,8 @@
-﻿using ExemploMeetingHangfire.Models;
+﻿using ExemploMeetingHangfire.Enums;
+using ExemploMeetingHangfire.Models;
 using ExemploMeetingHangfire.Repositories.Interfaces;
 using ExemploMeetingHangfire.Services.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,17 +13,60 @@ namespace ExemploMeetingHangfire.Services
     {
         private readonly IRepository<Posto> _repositorioPosto;
         private readonly IRepository<PostoParaAtualizar> _repositorioPostoParaAtualizar;
+        private readonly IRepository<Processamento> _repositorioProcessamento;
 
-        public PostoService(IRepository<Posto> repositorioPosto, IRepository<PostoParaAtualizar> repositorioPostoParaAtualizar)
+        public PostoService(
+            IRepository<Posto> repositorioPosto, 
+            IRepository<PostoParaAtualizar> repositorioPostoParaAtualizar,
+            IRepository<Processamento> repositorioProcessamento)
         {
             _repositorioPosto = repositorioPosto;
             _repositorioPostoParaAtualizar = repositorioPostoParaAtualizar;
+            _repositorioProcessamento = repositorioProcessamento;
         }
 
         public async Task GerarMassas()
         {
-            await GerarMassaEmPostos();
-            await GerarMassaEmPostosParaAtualizar();
+            Processamento processamento = null;
+
+            try
+            {
+                processamento = await RegistrarProcessamento();
+                await GerarMassaEmPostos();
+                await GerarMassaEmPostosParaAtualizar();
+                await AtualizarProcessamento(processamento, StatusProcessamento.Sucesso);
+            }
+            catch
+            {
+                await RemoverValoresExistentes(_repositorioPosto);
+                await RemoverValoresExistentes(_repositorioPostoParaAtualizar);
+                await AtualizarProcessamento(processamento, StatusProcessamento.Falha);
+            }
+        }
+
+        private async Task AtualizarProcessamento(Processamento processamento, StatusProcessamento status)
+        {
+            if (processamento is null)
+                return;
+
+            processamento.Status = status;
+            processamento.DataFinalizada = DateTime.Now;
+
+            await _repositorioProcessamento.UpdateAsync(processamento);
+        }
+
+        private async Task<Processamento> RegistrarProcessamento()
+        {
+            var processamento = new Processamento
+            {
+                Ativo = true,
+                DataInicio = DateTime.Now,
+                Status = StatusProcessamento.Processando
+            };
+
+            await _repositorioProcessamento.InsertAsync(processamento);
+
+            return processamento;
         }
 
         private async Task GerarMassaEmPostos()
@@ -71,8 +116,6 @@ namespace ExemploMeetingHangfire.Services
 
             await _repositorioPostoParaAtualizar.InsertAsync(lista);
         }
-
-
 
         private async Task RemoverValoresExistentes<T>(IRepository<T> repositorio) where T : EntidadeBase
         {
