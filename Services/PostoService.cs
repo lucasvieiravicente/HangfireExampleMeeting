@@ -18,7 +18,13 @@ namespace ExemploMeetingHangfire.Services
             _repositorioPostoParaAtualizar = repositorioPostoParaAtualizar;
         }
 
-        public async Task GerarMassaEmPostos()
+        public async Task GerarMassas()
+        {
+            await GerarMassaEmPostos();
+            await GerarMassaEmPostosParaAtualizar();
+        }
+
+        private async Task GerarMassaEmPostos()
         {
             await RemoverValoresExistentes(_repositorioPosto);
 
@@ -42,7 +48,7 @@ namespace ExemploMeetingHangfire.Services
             await _repositorioPosto.InsertAsync(lista);
         }
 
-        public async Task GerarMassaEmPostosParaAtualizar()
+        private async Task GerarMassaEmPostosParaAtualizar()
         {
             await RemoverValoresExistentes(_repositorioPostoParaAtualizar);
 

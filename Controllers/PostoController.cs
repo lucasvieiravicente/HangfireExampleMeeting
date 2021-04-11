@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
 using ExemploMeetingHangfire.Services.Interfaces;
+using Hangfire;
 
 namespace ExemploMeetingHangfire.Controllers
 {
@@ -12,11 +13,9 @@ namespace ExemploMeetingHangfire.Controllers
     public class PostoController : ControllerBase
     {
         private readonly IRepository<PostoParaAtualizar> _repositorio;
-        private readonly IPostoService _postoService;
-        public PostoController(IRepository<PostoParaAtualizar> repositorio, IPostoService postoService)
+        public PostoController(IRepository<PostoParaAtualizar> repositorio)
         {
             _repositorio = repositorio;
-            _postoService = postoService;
         }
 
         [HttpPost("InserirPosto")]
@@ -33,26 +32,12 @@ namespace ExemploMeetingHangfire.Controllers
             }
         }
 
-        [HttpPost("GerarMassaEmPostos")]
-        public async Task<ActionResult> GerarMassaEmPostos()
+        [HttpPost("GerarMassa")]
+        public ActionResult GerarMassaEmPostos()
         {
             try
             {
-                await _postoService.GerarMassaEmPostos();
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex);
-            }
-        }
-
-        [HttpPost("GerarMassaEmPostosParaAtualizar")]
-        public async Task<ActionResult> GerarMassaEmPostosParaAtualizar()
-        {
-            try
-            {
-                await _postoService.GerarMassaEmPostosParaAtualizar();
+                BackgroundJob.Enqueue<IPostoService>(x => x.GerarMassas());
                 return Ok();
             }
             catch (Exception ex)
