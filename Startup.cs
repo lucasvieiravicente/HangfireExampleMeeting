@@ -1,3 +1,4 @@
+using ExemploMeetingHangfire.Domains.Contexts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -11,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace ExemploMeetingHangfire
 {
@@ -23,14 +25,13 @@ namespace ExemploMeetingHangfire
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-            AddSwaggerGenInfo(services);
+            AdicionarSwaggerGenInfo(services);
+            AdicionarContextoEF(services, Configuration);
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
@@ -49,10 +50,10 @@ namespace ExemploMeetingHangfire
                 endpoints.MapControllers();
             });
 
-            ConfigureSwagger(app);
+            ConfigurarSwagger(app);
         }
 
-        private static void ConfigureSwagger(IApplicationBuilder app)
+        private static void ConfigurarSwagger(IApplicationBuilder app)
         {
             app.UseSwagger();
             app.UseSwaggerUI(c =>
@@ -61,7 +62,7 @@ namespace ExemploMeetingHangfire
             });
         }
 
-        private static void AddSwaggerGenInfo(IServiceCollection services)
+        private static void AdicionarSwaggerGenInfo(IServiceCollection services)
         {
             services.AddSwaggerGen(c =>
             {
@@ -82,6 +83,11 @@ namespace ExemploMeetingHangfire
                     },
                 });
             });
+        }
+
+        private static void AdicionarContextoEF(IServiceCollection services, IConfiguration configuration)
+        {
+            services.AddDbContext<EFContext>(x => x.UseSqlServer(configuration.GetConnectionString("Database")));
         }
     }
 }
