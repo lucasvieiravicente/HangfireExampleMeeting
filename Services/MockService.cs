@@ -74,9 +74,9 @@ namespace ExemploMeetingHangfire.Services
 
             var lista = new List<Posto>();
 
-            for (int i = 0; i < 1000; i++)
+            for (int i = 0; i < 500; i++)
             {
-                var cnpj = 1000 + i;
+                var cnpj = 500 + i;
 
                 lista.Add(new Posto()
                 {
@@ -100,9 +100,9 @@ namespace ExemploMeetingHangfire.Services
 
             var lista = new List<PostoParaAtualizar>();
 
-            for (int i = 0; i < 1000; i++)
+            for (int i = 0; i < 500; i++)
             {
-                var cnpj = 1000 + i;
+                var cnpj = 500 + i;
 
                 lista.Add(new PostoParaAtualizar()
                 {
